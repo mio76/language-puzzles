@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>English</title>
+
+<style>
+  *{ margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; text-align: center; background: #f0f4ff; margin:0; }
+  h1 { font-size: 1.6em; margin: 18px 0 12px; color:#6a5acd; }
+  #level-title { font-size: 1.2rem; margin: 5px; color:#4facfe; font-weight:bold; }
+  #puzzle-area, #sentence-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;   /* центр по горизонталі */
+  align-items: center;       /* центр з вертикалі */
+  margin: 10px;
+  padding: 10px;
+  align-content: center;
+}
+  #puzzle-area { background: #fff; border-radius: 10px; min-height: 130px; }
+  #sentence-area { border: 2px dashed #666; border-radius: 8px; min-height: 130px; background:#fdfdfd; }
+  .piece {
+    display:inline-flex;    
+    vertical-align: auto;
+    justify-content:center;
+    margin: 3px;
+    padding:10px 20px;
+    height:20px;
+    border-radius:8px;
+    color:#fff;
+    font-weight:bold;
+    font-size: 1.2em;
+    cursor:grab;
+    user-select:none;
+    box-shadow:0 3px 5px rgba(0,0,0,0.2);
+    transition:transform 0.2s;
+    white-space:nowrap;
+    position:relative;
+  }
+  .piece:active { transform:scale(1.05); }
+  #translation { margin-top:15px; font-weight:bold; font-size:1.2rem; }
+  .trans-en { color:#4facfe; }
+  .trans-ipa { color:#6a5acd; }
+  .trans-uk { color:#ff6f61; }
+  #next-btn { margin:10px; padding:10px 20px; border:none; border-radius:8px; background:#4facfe; color:#fff; font-size:1.2rem; display:none; cursor:pointer; }
+  #next-btn:hover { background:#00c6ff; }
+
+ .circle-radio {
+  display: inline-block;
+  margin: 2px;
+  cursor: pointer;
+}
+
+.circle-radio input {
+  display: none; /* приховуємо стандартний radio */
+}
+
+.circle-radio span {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  border-radius: 50%;
+  text-align: center;
+  background-color: #ddd;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+/* Для рівнів A */
+.circle-radio input[value="A1"]:checked + span,
+.circle-radio input[value="A2"]:checked + span {
+  background-color: green;
+  color: white;
+}
+
+/* Для рівнів B */
+.circle-radio input[value="B1"]:checked + span,
+.circle-radio input[value="B2"]:checked + span {
+  background-color: orange;
+  color: white;
+}
+
+/* Для рівнів C */
+.circle-radio input[value="C1"]:checked + span,
+.circle-radio input[value="C2"]:checked + span {
+  background-color: red;
+  color: white;
+}
+   .lang-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 3px;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    outline: 3px solid #fff; /* внешняя рамка */
+  }
+  .lang-btn.en { background-color: #6a5acd; }   /* фиолетовый */
+  .lang-btn.fr { background-color: #4facfe; }   /* голубой */
+  .lang-btn.de { background-color: #ff6f61; }   /* розово-оранжевый */
+  .lang-btn:hover { opacity: 0.8; }
+  
+  /* адаптивность */
+  @media (max-width: 480px) {
+    #level-buttons {
+      flex-wrap: wrap;
+      justify-content: center;
+    }    
+  }
+</style>
+</head>
+<body>
+
+<h1>English puzzle</h1>
+<div id="level-buttons">
+  <!-- Кнопка мов -->
+  <div class="circle-radio" style="position:relative; z-index: 100;">
+    <span id="langBtn" style="background-color: #6a5acd; color: white;">EN</span>
+    <div id="langMenu" style="display:none; position:absolute; top:50px; left:-3px;">
+      <button onclick="location.href='english.html'" class="lang-btn en">EN</button>
+      <button onclick="location.href='french.html'" class="lang-btn fr">FR</button>
+      <button onclick="location.href='german.html'" class="lang-btn de">DE</button>
+    </div>
+  </div>
+
+  <!-- Кнопки рівнів -->
+  <label class="circle-radio">
+    <input type="radio" name="level" value="A1" checked>
+    <span>A1</span>
+  </label>
+  <label class="circle-radio">
+    <input type="radio" name="level" value="A2">
+    <span>A2</span>
+  </label>
+  <label class="circle-radio">
+    <input type="radio" name="level" value="B1">
+    <span>B1</span>
+  </label>
+  <label class="circle-radio">
+    <input type="radio" name="level" value="B2">
+    <span>B2</span>
+  </label>
+  <label class="circle-radio">
+    <input type="radio" name="level" value="C1">
+    <span>C1</span>
+  </label>
+  <label class="circle-radio">
+    <input type="radio" name="level" value="C2">
+    <span>C2</span>
+  </label>  
+</div>
+
+<div id="level-title"></div>
+<div id="puzzle-area"></div>
+<div id="sentence-area"></div>
+<div id="translation"></div>
+<button id="next-btn">Далі ➔</button>
+
+<script>
+const langBtn = document.getElementById('langBtn');
+  const langMenu = document.getElementById('langMenu');
+
+  langBtn.addEventListener('click', () => {
+    langMenu.style.display = langMenu.style.display === 'none' ? 'block' : 'none';
+  });
+
+let level = "A1"; // за замовчуванням
+let currentPhrase = 0;
+const levels = {
+  "A1": [
+  {en:"Hello", ipa:"həˈloʊ", uk:"Привіт"},
+  {en:"Hi", ipa:"haɪ", uk:"Привіт"},
+  {en:"Good morning", ipa:"ɡʊd ˈmɔːrnɪŋ", uk:"Доброго ранку"},
+  {en:"Good night", ipa:"ɡʊd naɪt", uk:"На добраніч"},
+  {en:"Thank you", ipa:"ˈθæŋk juː", uk:"Дякую"},
+  {en:"Please", ipa:"pliːz", uk:"Будь ласка"},
+  {en:"Yes", ipa:"jɛs", uk:"Так"},
+  {en:"No", ipa:"noʊ", uk:"Ні"},
+  {en:"How are you", ipa:"haʊ ɑːr juː", uk:"Як справи"},
+  {en:"See you", ipa:"siː juː", uk:"Побачимось"},  
+  {en:"Goodbye", ipa:"ɡʊdˈbaɪ", uk:"До побачення"},
+  {en:"Excuse me", ipa:"ɪkˈskjuːz miː", uk:"Вибачте"},
+  {en:"Sorry", ipa:"ˈsɑːri", uk:"Перепрошую"},
+  {en:"I am hungry", ipa:"aɪ æm ˈhʌŋɡri", uk:"Я голодний"},
+  {en:"My name is...", ipa:"maɪ neɪm ɪz", uk:"Мене звати..."},
+  {en:"I am from...", ipa:"aɪ æm frʌm", uk:"Я з..."},  
+  {en:"Mother", ipa:"ˈmʌðər", uk:"Мама"},
+  {en:"Father", ipa:"ˈfɑːðər", uk:"Тато"},
+  {en:"Brother", ipa:"ˈbrʌðər", uk:"Брат"},
+  {en:"Sister", ipa:"ˈsɪstər", uk:"Сестра"},
+  {en:"Son", ipa:"sʌn", uk:"Син"},
+  {en:"Daughter", ipa:"ˈdɔːtər", uk:"Донька"},  
+  {en:"Bread", ipa:"brɛd", uk:"Хліб"},
+  {en:"Milk", ipa:"mɪlk", uk:"Молоко"},
+  {en:"Apple", ipa:"ˈæpəl", uk:"Яблуко"},
+  {en:"Tea", ipa:"tiː", uk:"Чай"},
+  {en:"Coffee", ipa:"ˈkɔːfi", uk:"Кава"},
+  {en:"Meat", ipa:"miːt", uk:"М'ясо"},  
+  {en:"Room", ipa:"ruːm", uk:"Кімната"},
+  {en:"Table", ipa:"ˈteɪbəl", uk:"Стіл"},
+  {en:"Chair", ipa:"ʧɛr", uk:"Стілець"},
+  {en:"Bed", ipa:"bɛd", uk:"Ліжко"},
+  {en:"Window", ipa:"ˈwɪndoʊ", uk:"Вікно"},
+  {en:"Door", ipa:"dɔːr", uk:"Двері"},  
+  {en:"Bus", ipa:"bʌs", uk:"Автобус"},
+  {en:"Train", ipa:"treɪn", uk:"Поїзд"},
+  {en:"Street", ipa:"striːt", uk:"Вулиця"},
+  {en:"Hotel", ipa:"hoʊˈtɛl", uk:"Готель"},
+  {en:"Airport", ipa:"ˈɛrˌpɔːrt", uk:"Аеропорт"},
+  {en:"Ticket", ipa:"ˈtɪkɪt", uk:"Квиток"},  
+  {en:"Red", ipa:"rɛd", uk:"Червоний"},
+  {en:"Blue", ipa:"bluː", uk:"Синій"},
+  {en:"Green", ipa:"ɡriːn", uk:"Зелений"},
+  {en:"Yellow", ipa:"ˈjɛloʊ", uk:"Жовтий"},
+  {en:"Black", ipa:"blæk", uk:"Чорний"},
+  {en:"White", ipa:"waɪt", uk:"Білий"},  
+  {en:"One", ipa:"wʌn", uk:"Один"},
+  {en:"Two", ipa:"tuː", uk:"Два"},
+  {en:"Three", ipa:"θriː", uk:"Три"},
+  {en:"Four", ipa:"fɔːr", uk:"Чотири"},
+  {en:"Five", ipa:"faɪv", uk:"П’ять"},
+  {en:"Ten", ipa:"tɛn", uk:"Десять"},  
+  {en:"Today", ipa:"təˈdeɪ", uk:"Сьогодні"},
+  {en:"Tomorrow", ipa:"təˈmɑːroʊ", uk:"Завтра"},
+  {en:"Yesterday", ipa:"ˈjɛstərdeɪ", uk:"Вчора"},
+  {en:"Morning", ipa:"ˈmɔːrnɪŋ", uk:"Ранок"},
+  {en:"Afternoon", ipa:"ˌæftərˈnuːn", uk:"День"},
+  {en:"Evening", ipa:"ˈiːvnɪŋ", uk:"Вечір"},
+  {en:"Night", ipa:"naɪt", uk:"Ніч"},  
+  {en:"Where is the bus stop", ipa:"wer ɪz ðə bʌs stɒp", uk:"Де автобусна зупинка"},
+  {en:"See you tomorrow", ipa:"siː juː təˈmɒroʊ", uk:"Побачимось завтра"},
+  {en:"I want some water", ipa:"aɪ wɑːnt sʌm ˈwɔːtər", uk:"Я хочу трохи води"},
+  {en:"This is my father", ipa:"ðɪs ɪz maɪ ˈfɑːðər", uk:"Це мій тато"},
+  {en:"I like apples", ipa:"aɪ laɪk ˈæpəlz", uk:"Мені подобаються яблука"},
+  {en:"We live in a city", ipa:"wi lɪv ɪn ə ˈsɪti", uk:"Ми живемо в місті"},
+  {en:"She has a big house", ipa:"ʃi hæz ə bɪɡ haʊs", uk:"Вона має великий будинок"},
+  {en:"He goes to school", ipa:"hi ɡoʊz tu skuːl", uk:"Він ходить до школи"},
+  {en:"I want water", ipa:"aɪ wɑːnt ˈwɔːtər", uk:"Я хочу води"},
+  {en:"They play football", ipa:"ðeɪ pleɪ ˈfʊtbɔːl", uk:"Вони грають у футбол"},
+  {en:"We read books", ipa:"wi riːd bʊks", uk:"Ми читаємо книжки"},
+  {en:"Do you like tea?", ipa:"duː ju laɪk tiː", uk:"Тобі подобається чай?"},
+  {en:"What is your name?", ipa:"wʌt ɪz jɔːr neɪm", uk:"Як тебе звати?"},
+  {en:"I don’t understand", ipa:"aɪ doʊnt ˌʌndərˈstænd", uk:"Я не розумію"},
+  {en:"Can you help me?", ipa:"kæn juː hɛlp miː", uk:"Ви можете мені допомогти?"},
+  {en:"Where is the toilet?", ipa:"wɛr ɪz ðə ˈtɔɪlət", uk:"Де туалет?"},
+  {en:"How much is this?", ipa:"haʊ mʌtʃ ɪz ðɪs", uk:"Скільки це коштує?"}
+  ],
+  "A2": [
+  {en:"Can you help me please", ipa:"kæn juː hɛlp miː pliːz", uk:"Ви можете мені допомогти, будь ласка"},
+  {en:"I like learning new languages", ipa:"aɪ laɪk ˈlɜːrnɪŋ njuː ˈlæŋɡwɪdʒɪz", uk:"Мені подобається вивчати нові мови"},
+  {en:"It is important to practice every day", ipa:"ɪt ɪz ɪmˈpɔːrtənt tuː ˈpræktɪs ˈɛvri deɪ", uk:"Важливо практикуватися щодня"},
+  {en:"I would like to travel around the world", ipa:"aɪ wʊd laɪk tuː ˈtrævəl əˈraʊnd ðə wɜːrld", uk:"Я хотів би подорожувати світом"},
+  {en:"I went to the park yesterday", ipa:"aɪ wɛnt tuː ðə pɑːrk ˈjɛstərdeɪ", uk:"Я ходив учора до парку"},
+  {en:"She usually drinks tea in the morning", ipa:"ʃi ˈjuːʒuəli drɪŋks tiː ɪn ðə ˈmɔːrnɪŋ", uk:"Вона зазвичай п’є чай вранці"},
+  {en:"Can you help me with my homework", ipa:"kæn juː hɛlp miː wɪð maɪ ˈhoʊmwɜːrk", uk:"Ти можеш допомогти мені з домашнім завданням"},
+  {en:"We are going to visit our friends tomorrow", ipa:"wiː ɑːr ˈɡoʊɪŋ tuː ˈvɪzɪt ˈaʊər frɛndz təˈmɒroʊ", uk:"Ми збираємося завтра відвідати наших друзів"},  
+  {en:"I went to the park yesterday", ipa:"aɪ wɛnt tuː ðə pɑːrk ˈjɛstərdeɪ", uk:"Я ходив учора до парку"},
+  {en:"She usually drinks tea in the morning", ipa:"ʃi ˈjuːʒuəli drɪŋks tiː ɪn ðə ˈmɔːrnɪŋ", uk:"Вона зазвичай п’є чай вранці"},
+  {en:"Can you help me with my homework", ipa:"kæn juː hɛlp miː wɪð maɪ ˈhoʊmwɜːrk", uk:"Ти можеш допомогти мені з домашнім завданням"},
+  {en:"We are going to visit our friends tomorrow", ipa:"wiː ɑːr ˈɡoʊɪŋ tuː ˈvɪzɪt ˈaʊər frɛndz təˈmɒroʊ", uk:"Ми збираємося завтра відвідати наших друзів"},
+  {en:"I bought a new jacket last week", ipa:"aɪ bɔːt ə njuː ˈʤækɪt læst wiːk", uk:"Я купив нову куртку минулого тижня"},
+  {en:"They are watching a movie right now", ipa:"ðeɪ ɑːr ˈwɑːʧɪŋ ə ˈmuːvi raɪt naʊ", uk:"Вони дивляться фільм прямо зараз"},
+  {en:"We often play football after school", ipa:"wiː ˈɔːfən pleɪ ˈfʊtbɔːl ˈæftər skuːl", uk:"Ми часто граємо у футбол після школи"},
+  {en:"I didn’t understand the question", ipa:"aɪ ˈdɪdnt ˌʌndərˈstænd ðə ˈkwɛsʧən", uk:"Я не зрозумів питання"},
+  {en:"My parents are working in the garden", ipa:"maɪ ˈpɛrənts ɑːr ˈwɜːrkɪŋ ɪn ðə ˈɡɑːrdən", uk:"Мої батьки працюють у саду"},
+  {en:"She is learning how to cook Italian food", ipa:"ʃi ɪz ˈlɜːrnɪŋ haʊ tuː kʊk ɪˈtæliən fuːd", uk:"Вона вчиться готувати італійську їжу"},
+  {en:"We traveled to another city last month", ipa:"wiː ˈtrævəld tuː əˈnʌðər ˈsɪti læst mʌnθ", uk:"Ми подорожували до іншого міста минулого місяця"},
+  {en:"I am reading a very interesting book", ipa:"aɪ æm ˈriːdɪŋ ə ˈvɛri ˈɪntrəstɪŋ bʊk", uk:"Я читаю дуже цікаву книжку"}
+  ],
+  // - B1 — прості часи, непряма мова, вираження переваг.
+  "B1": [
+  {en:"I have been studying English for three years", ipa:"aɪ hæv bɪn ˈstʌdiɪŋ ˈɪŋɡlɪʃ fɔːr θriː jɪrz", uk:"Я вивчаю англійську вже три роки"},
+  {en:"She said that she would call me later", ipa:"ʃi sɛd ðæt ʃi wʊd kɔːl miː ˈleɪtər", uk:"Вона сказала, що подзвонить мені пізніше"},
+  {en:"I enjoy reading books that make me think", ipa:"aɪ ɪnˈʤɔɪ ˈriːdɪŋ bʊks ðæt meɪk miː θɪŋk", uk:"Мені подобається читати книжки, які змушують мене замислитися"},
+  {en:"We decided to go hiking because the weather was nice", ipa:"wi dɪˈsaɪdɪd tuː ɡoʊ ˈhaɪkɪŋ bɪˈkɔːz ðə ˈwɛðər wəz naɪs", uk:"Ми вирішили піти в похід, бо погода була гарна"},
+  {en:"I was surprised when I saw him at the party", ipa:"aɪ wəz sərˈpraɪzd wɛn aɪ sɔː hɪm æt ðə ˈpɑːrti", uk:"Я здивувався, коли побачив його на вечірці"},
+  {en:"She is interested in learning more about different cultures", ipa:"ʃi ɪz ˈɪntrəstəd ɪn ˈlɜːrnɪŋ mɔːr əˈbaʊt ˈdɪfrənt ˈkʌlʧərz", uk:"Їй цікаво дізнатися більше про різні культури"},
+  {en:"I forgot to bring my homework, so the teacher was angry", ipa:"aɪ fərˈɡɑːt tuː brɪŋ maɪ ˈhoʊmwɜːrk, soʊ ðə ˈtiːʧər wəz ˈæŋɡri", uk:"Я забув принести домашнє завдання, тому вчитель розсердився"},
+  {en:"They moved to another city because of his new job", ipa:"ðeɪ muːvd tuː əˈnʌðər ˈsɪti bɪˈkɔːz əv hɪz nuː ʤɑːb", uk:"Вони переїхали до іншого міста через його нову роботу"},
+  {en:"I was watching TV when the phone rang", ipa:"aɪ wəz ˈwɑːʧɪŋ ˌtiːˈviː wɛn ðə foʊn ræŋ", uk:"Я дивився телевізор, коли задзвонив телефон"},
+  {en:"She promised to help me with my project tomorrow", ipa:"ʃi ˈprɑːmɪst tuː hɛlp miː wɪð maɪ ˈprɑːʤɛkt təˈmɑːroʊ", uk:"Вона пообіцяла допомогти мені з проєктом завтра"},
+  {en:"I think learning English will help me find a better job", ipa:"aɪ θɪŋk ˈlɜːrnɪŋ ˈɪŋɡlɪʃ wɪl hɛlp miː faɪnd ə ˈbɛtər ʤɑːb", uk:"Я думаю, що вивчення англійської допоможе мені знайти кращу роботу"}
+],
+// - B2 — умовні пропозиції, складні конструкції, абстрактні ідеї.
+ "B2": [
+  {en:"If I had known about the problem earlier, I would have tried to solve it", ipa:"ɪf aɪ hæd noʊn əˈbaʊt ðə ˈprɑːbləm ˈɜːrliər, aɪ wʊd hæv traɪd tuː sɑːlv ɪt", uk:"Якби я знав про проблему раніше, я б спробував її вирішити"},
+  {en:"The film was so moving that it changed my perspective on life", ipa:"ðə fɪlm wəz soʊ ˈmuːvɪŋ ðæt ɪt ʧeɪndʒd maɪ pərˈspɛktɪv ɑn laɪf", uk:"Фільм був настільки зворушливим, що змінив моє бачення життя"},
+  {en:"Despite facing many difficulties, they managed to achieve their goals", ipa:"dɪˈspaɪt ˈfeɪsɪŋ ˈmɛni ˈdɪfɪkəltiz, ðeɪ ˈmænɪʤd tuː əˈʧiːv ðɛr ɡoʊlz", uk:"Попри численні труднощі, їм вдалося досягти своїх цілей"},
+  {en:"He suggested that we should reconsider our strategy before making a final decision", ipa:"hi səˈʤɛstəd ðæt wi ʃʊd ˌriːkənˈsɪdər ˈaʊər ˈstrætəʤi bɪˈfɔːr ˈmeɪkɪŋ ə ˈfaɪnl dɪˈsɪʒən", uk:"Він запропонував переглянути нашу стратегію перед остаточним рішенням"},
+  {en:"The book provides a detailed analysis of the economic situation in the country", ipa:"ðə bʊk prəˈvaɪdz ə dɪˈteɪld əˈnæləsɪs əv ði ˌɛkəˈnɑːmɪk ˌsɪʧuˈeɪʃən ɪn ðə ˈkʌntri", uk:"Книга містить детальний аналіз економічної ситуації в країні"},
+  {en:"She was able to express her opinion clearly, even though others disagreed", ipa:"ʃi wəz ˈeɪbl tuː ɪkˈsprɛs hər əˈpɪnjən ˈklɪrli, ˈiːvən ðoʊ ˈʌðərz ˌdɪsəˈɡriːd", uk:"Вона змогла чітко висловити свою думку, хоча інші не погодилися"},
+  {en:"By the time we arrived, the conference had already started", ipa:"baɪ ðə taɪm wi əˈraɪvd, ðə ˈkɑːnfrəns hæd ɔːlˈrɛdi ˈstɑːrtəd", uk:"Коли ми приїхали, конференція вже розпочалася"},
+  {en:"It is essential to consider both advantages and disadvantages before choosing", ipa:"ɪt ɪz ɪˈsɛnʃəl tuː kənˈsɪdər boʊθ ædˈvæntɪʤɪz ænd ˌdɪsədˈvæntɪʤɪz bɪˈfɔːr ˈʧuːzɪŋ", uk:"Важливо враховувати як переваги, так і недоліки перед вибором"},
+  {en:"The teacher encouraged us to think critically about the topic", ipa:"ðə ˈtiːʧər ɪnˈkɜːrɪʤd ʌs tuː θɪŋk ˈkrɪtɪkli əˈbaʊt ðə ˈtɑːpɪk", uk:"Учитель заохочував нас критично мислити щодо теми"},
+  {en:"Although the plan seemed perfect, it turned out to be impractical", ipa:"ɔːlˈðoʊ ðə plæn siːmd ˈpɜːrfɪkt, ɪt tɜːrnd aʊt tuː biː ɪmˈpræktɪkəl", uk:"Хоча план здавався ідеальним, він виявився непрактичним"},
+  {en:"The company is looking for innovative solutions to improve productivity", ipa:"ðə ˈkʌmpəni ɪz ˈlʊkɪŋ fɔːr ˈɪnəˌveɪtɪv səˈluːʃənz tuː ɪmˈpruːv ˌproʊdʌkˈtɪvɪti", uk:"Компанія шукає інноваційні рішення для підвищення продуктивності"}
+],
+  "C1": [
+  {en:"If you enjoyed this program, you can donate to the author", ipa:"ɪf ju ɪnˈʤɔɪd ðɪs ˈproʊɡræm, ju kæn doʊˈneɪt tuː ði ˈɔːθər", uk:"Якщо вам сподобалась ця програма, ви можете задонатити автору"},
+  {en:"The author of the program is Ovsiienko Ihor Mykhailovych", ipa:"ðə ˈɔːθər əv ðə ˈproʊɡræm ɪz ˌɔvsiˈjɛŋko ˈiːhɔr mɪˈxaɪlovɪʧ", uk:"Автор програми — Овсієнко Ігор Михайлович"},
+  {en:"Although the project seemed impossible at first, we eventually managed to complete it successfully", ipa:"ɔːlˈðoʊ ðə ˈprɑːʤɛkt siːmd ɪmˈpɑːsəbl æt fɜːrst, wi ɪˈvɛnʧuəli ˈmænɪʤd tuː kəmˈpliːt ɪt səkˈsɛsfəli", uk:"Хоча проєкт спочатку здавався неможливим, зрештою нам вдалося успішно його завершити"},
+  {en:"He tends to underestimate the importance of careful planning, which often leads to unnecessary problems", ipa:"hi tɛndz tuː ˌʌndərˈɛstɪmeɪt ði ɪmˈpɔːrtəns əv ˈkɛrfəl ˈplænɪŋ, wɪʧ ˈɔfən liːdz tuː ʌnˈnɛsəsɛri ˈprɑːbləmz", uk:"Він схильний недооцінювати важливість ретельного планування, що часто призводить до зайвих проблем"},
+  {en:"The government should implement policies that encourage sustainable development", ipa:"ðə ˈɡʌvərnmənt ʃʊd ˈɪmpləmənt ˈpɑːləsiz ðæt ɛnˈkɜːrɪʤ səˈsteɪnəbl dɪˈvɛləpmənt", uk:"Уряд має впроваджувати політику, що сприяє сталому розвитку"},
+  {en:"She expressed her ideas so convincingly that everyone agreed with her", ipa:"ʃi ɪkˈsprɛst hər aɪˈdiəz soʊ kənˈvɪnsɪŋli ðæt ˈɛvrɪwʌn əˈɡriːd wɪð hər", uk:"Вона висловила свої ідеї так переконливо, що всі з нею погодилися"},
+  {en:"The lecture provided a comprehensive overview of modern scientific theories", ipa:"ðə ˈlɛkʧər prəˈvaɪdəd ə ˌkɑːmprɪˈhɛnsɪv ˈoʊvərvjuː əv ˈmɑːdərn saɪənˈtɪfɪk ˈθɪriz", uk:"Лекція дала всебічний огляд сучасних наукових теорій"},
+  {en:"He was criticized for failing to take responsibility for his actions", ipa:"hi wəz ˈkrɪtɪsaɪzd fɔːr ˈfeɪlɪŋ tuː teɪk rɪˌspɑːnsəˈbɪləti fɔːr hɪz ˈækʃənz", uk:"Його критикували за те, що він не взяв на себе відповідальність за свої вчинки"},
+  {en:"The novel illustrates how personal choices can influence society as a whole", ipa:"ðə ˈnɑːvəl ˈɪləˌstreɪts haʊ ˈpɜːrsənl ˈʧɔɪsɪz kæn ˈɪnfluəns səˈsaɪəti æz ə hoʊl", uk:"Роман показує, як особисті вибори можуть впливати на суспільство загалом"},
+  {en:"She managed to convey complex emotions through simple words", ipa:"ʃi ˈmænɪʤd tuː kənˈveɪ ˈkɑːmplɛks ɪˈmoʊʃənz θruː ˈsɪmpl wɜːrdz", uk:"Їй вдалося передати складні емоції простими словами"},
+  {en:"The debate highlighted the necessity of balancing freedom with responsibility", ipa:"ðə dɪˈbeɪt ˈhaɪˌlaɪtəd ðə nəˈsɛsəti əv ˈbælənsiŋ ˈfriːdəm wɪð rɪˌspɑːnsəˈbɪləti", uk:"Дебати підкреслили необхідність балансувати свободу та відповідальність"},
+  {en:"He gave a detailed explanation of the reasons behind his decision", ipa:"hi ɡeɪv ə dɪˈteɪld ˌɛkspləˈneɪʃən əv ðə ˈrizənz bɪˈhaɪnd hɪz dɪˈsɪʒən", uk:"Він дав детальне пояснення причин свого рішення"},
+  {en:"The article discusses the impact of globalization on local traditions", ipa:"ðə ˈɑːrtɪkl dɪˈskʌsɪz ði ˈɪmpækt əv ˌɡloʊbələˈzeɪʃən ɑn ˈloʊkl trəˈdɪʃənz", uk:"Стаття розглядає вплив глобалізації на місцеві традиції"}
+],
+  "C2": [  
+  {en:"Had it not been for her unwavering determination and ability to adapt under pressure, the team would never have reached such remarkable success", ipa:"hæd ɪt nɑt bɪn fɔːr hər ˌʌnˈweɪvərɪŋ dɪˌtɜːrmɪˈneɪʃən ænd əˈbɪləti tuː əˈdæpt ˈʌndər ˈprɛʃər, ðə tiːm wʊd ˈnɛvər hæv riːʧt sʌʧ rɪˈmɑːrkəbl səkˈsɛs", uk:"Якби не її непохитна рішучість і здатність адаптуватися під тиском, команда ніколи не досягла б такого видатного успіху"},
+  {en:"The novel explores the intricate interplay between memory and identity, challenging the reader to reconsider the very nature of truth", ipa:"ðə ˈnɑːvəl ɪkˈsplɔːrz ði ˈɪntrɪkət ˈɪntərˌpleɪ bɪˈtwiːn ˈmɛməri ænd aɪˈdɛntəti, ˈʧælənʤɪŋ ðə ˈriːdər tuː ˌriːkənˈsɪdər ðə ˈvɛri ˈneɪʧər əv truːθ", uk:"Роман досліджує складну взаємодію пам’яті та ідентичності, змушуючи читача переосмислити саму природу істини"},
+  {en:"The complexity of the issue lies not only in its historical background but also in its ethical implications", ipa:"ðə kəmˈplɛksəti əv ði ˈɪʃuː laɪz nɑt ˈoʊnli ɪn ɪts hɪˈstɔːrɪkl ˈbækˌɡraʊnd bət ˈɔːlsoʊ ɪn ɪts ˈɛθɪkl ˌɪmpləˈkeɪʃənz", uk:"Складність питання полягає не лише в його історичному контексті, а й у його етичних наслідках"},
+  {en:"Her argument was so sophisticated that it required careful analysis to fully grasp its meaning", ipa:"hər ˈɑːrɡjəmənt wəz soʊ səˈfɪstɪˌkeɪtəd ðæt ɪt rɪˈkwaɪrd ˈkɛrfəl əˈnæləsɪs tuː ˈfʊli ɡræsp ɪts ˈmiːnɪŋ", uk:"Її аргумент був настільки складним, що вимагав ретельного аналізу, щоб повністю зрозуміти його зміст"},
+  {en:"The speech emphasized the necessity of reconciling conflicting interests in order to achieve long-term stability", ipa:"ðə spiːʧ ˈɛmfəˌsaɪzd ðə nəˈsɛsəti əv ˈrɛnkəˌsaɪlɪŋ kənˈflɪktɪŋ ˈɪntrəsts ɪn ˈɔrdər tuː əˈʧiːv lɔːŋ tɜːrm stəˈbɪləti", uk:"Промова підкреслила необхідність примирення суперечливих інтересів для досягнення довгострокової стабільності"},
+  {en:"The research paper delves into the philosophical foundations of democracy, questioning its applicability in modern societies", ipa:"ðə rɪˈsɜːrʧ ˈpeɪpər dɛlvz ˈɪntuː ðə ˌfɪləˈsɑːfɪkl faʊnˈdeɪʃənz əv dɪˈmɑːkrəsi, ˈkwɛsʧənɪŋ ɪts ˌæplɪkəˈbɪləti ɪn ˈmɑːdərn səˈsaɪətiz", uk:"Наукова стаття заглиблюється у філософські основи демократії, ставлячи під сумнів її застосовність у сучасних суспільствах"},
+  {en:"The author employs irony and subtle metaphors to critique the prevailing social norms", ipa:"ði ˈɔːθər ɛmˈplɔɪz ˈaɪrəni ænd ˈsʌtl ˈmɛtəfɔːrz tuː krɪˈtiːk ðə prɪˈveɪlɪŋ ˈsoʊʃəl nɔːrmz", uk:"Автор використовує іронію та тонкі метафори, щоб критикувати панівні соціальні норми"},
+  {en:"The complexity of human emotions often defies simplistic explanations, requiring nuanced interpretation", ipa:"ðə kəmˈplɛksəti əv ˈhjuːmən ɪˈmoʊʃənz ˈɔfən dɪˈfaɪz sɪmˈplɪstɪk ˌɛkspləˈneɪʃənz, rɪˈkwaɪrɪŋ ˈnuːɑːnst ˌɪntərprəˈteɪʃən", uk:"Складність людських емоцій часто не піддається простим поясненням, вимагаючи тонкої інтерпретації"},
+  {en:"The documentary sheds light on the subtle interconnections between politics, economics, and culture", ipa:"ðə ˌdɑːkjəˈmɛntəri ʃɛdz laɪt ɑn ðə ˈsʌtl ˌɪntərkəˈnɛkʃənz bɪˈtwiːn ˈpɑːlɪtɪks, ˌɛkəˈnɑːmɪks ænd ˈkʌlʧər", uk:"Документальний фільм проливає світло на тонкі взаємозв’язки між політикою, економікою та культурою"},
+  {en:"The essay argues that technological progress, while beneficial, may also exacerbate social inequalities", ipa:"ðə ˈɛseɪ ˈɑːrɡjuːz ðæt ˌtɛknəˈlɑːʤɪkl ˈprɑːɡrɛs, waɪl ˈbɛnɪfɪʃəl, meɪ ˈɔːlsoʊ ɪɡˈzæsərˌbeɪt ˈsoʊʃəl ˌɪnɪˈkwɑːlɪtiz", uk:"Есе стверджує, що технологічний прогрес, будучи корисним, може також поглиблювати соціальну нерівність"},
+  {en:"The philosopher contends that morality cannot be separated from cultural context, as values are inherently relative", ipa:"ðə fəˈlɑːsəfər kənˈtɛndz ðæt məˈræləti ˈkænɑt biː ˈsɛpəreɪtəd frəm ˈkʌlʧərəl ˈkɑːntɛkst, æz ˈvæljuz ɑr ɪnˈhɛrəntli ˈrɛlətɪv", uk:"Філософ стверджує, що мораль не можна відокремити від культурного контексту, адже цінності за своєю суттю відносні"}
+]
+};
+
+function shuffle(array){return array.sort(()=>Math.random()-0.5);}
+
+function createPiece(word,color){
+  const piece=document.createElement("div");
+  piece.className="piece";
+  piece.textContent=word;
+  piece.style.background=color;
+  piece.dataset.word=word;
+  piece.draggable=true;
+
+  piece.addEventListener("dragstart",e=>{
+    e.dataTransfer.setData("text",word);
+  });
+
+  piece.addEventListener("touchstart",e=>{
+    piece.style.position="absolute";
+    piece.style.zIndex=1000;
+  });
+  piece.addEventListener("touchmove",e=>{
+    e.preventDefault();
+    const touch=e.touches[0];
+    piece.style.left=touch.pageX-piece.offsetWidth/2+"px";
+    piece.style.top=touch.pageY-piece.offsetHeight/2+"px";
+  },{passive:false});
+  piece.addEventListener("touchend",e=>{
+    const phraseWords=levels[level][currentPhrase].en.split(" ");
+    const sentenceArea=document.getElementById("sentence-area");
+    const currentWords=Array.from(sentenceArea.children).map(el=>el.dataset.word);
+    const nextWord=phraseWords[currentWords.length];
+    if(word===nextWord){
+      const colors=["#4facfe","#00c6ff","#ff6f61","#6a5acd","#3cb371","#ffa500"];
+      const newPiece=createPiece(word,colors[currentWords.length%colors.length]);
+      sentenceArea.appendChild(newPiece);
+      piece.remove();
+      if(currentWords.length+1===phraseWords.length){
+       document.getElementById("translation").innerHTML =
+  `<span class="trans-en">EN: ${levels[level][currentPhrase].en}</span><br>
+   <span class="trans-ipa">IPA: ${levels[level][currentPhrase].ipa}</span><br>
+   <span class="trans-uk">UK: ${levels[level][currentPhrase].uk}</span>`;
+        document.getElementById("next-btn").style.display="inline-block";
+      }
+    } else {
+      piece.style.position="";
+      piece.style.left="";
+      piece.style.top="";
+    }
+  });
+
+  return piece;
+}
+
+document.getElementById("next-btn").addEventListener("click", () => {
+  const selectedRadio = document.querySelector('input[name="level"]:checked');
+  if (selectedRadio) {
+    level = selectedRadio.value; // наприклад "A1"
+  } else {
+    // якщо нічого не вибрано - випадковий рівень
+    const levelKeys = Object.keys(levels);
+    level = levelKeys[Math.floor(Math.random() * levelKeys.length)];
+  }
+
+  currentPhrase = Math.floor(Math.random() * levels[level].length);
+  loadPhrase();
+});
+
+function loadPhrase() {
+  const puzzleArea = document.getElementById("puzzle-area");
+  const sentenceArea = document.getElementById("sentence-area");
+  puzzleArea.innerHTML = "";
+  sentenceArea.innerHTML = "";
+  document.getElementById("translation").innerHTML = "";
+  document.getElementById("next-btn").style.display = "none";
+
+  // показуємо вибраний рівень
+  document.getElementById("level-title").textContent = "Рівень " + level;
+
+  const phraseWords = levels[level][currentPhrase].en.split(" ");
+  const shuffled = shuffle([...phraseWords]);
+  const colors = ["#4facfe","#00c6ff","#ff6f61","#6a5acd","#3cb371","#ffa500"];
+
+  shuffled.forEach((word,i) => {
+    puzzleArea.appendChild(createPiece(word, colors[i % colors.length]));
+  });
+
+  sentenceArea.addEventListener("dragover", e => e.preventDefault());
+  sentenceArea.addEventListener("drop", e => {
+    e.preventDefault();
+    const word = e.dataTransfer.getData("text");
+    const currentWords = Array.from(sentenceArea.children).map(el => el.dataset.word);
+    const nextWord = phraseWords[currentWords.length];
+    if (word === nextWord) {
+      const newPiece = createPiece(word, colors[currentWords.length % colors.length]);
+      sentenceArea.appendChild(newPiece);
+      [...puzzleArea.children].forEach(el => { if (el.dataset.word === word) el.remove(); });
+      if (currentWords.length + 1 === phraseWords.length) {
+        document.getElementById("translation").innerHTML =
+          `<span class="trans-en">EN: ${levels[level][currentPhrase].en}</span><br>
+           <span class="trans-ipa">IPA: ${levels[level][currentPhrase].ipa}</span><br>
+           <span class="trans-uk">UK: ${levels[level][currentPhrase].uk}</span>`;
+        document.getElementById("next-btn").style.display = "inline-block";
+      }
+    }
+  });
+}
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+// при старті відразу завантажуємо першу фразу
+window.addEventListener("DOMContentLoaded", () => {
+  loadPhrase();
+});
+</script>
+
+</body>
+</html>
