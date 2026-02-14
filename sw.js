@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'language-puzzles-cache-v2';
+const CACHE_NAME = 'language-puzzles-cache-v1';
 
 const urlsToCache = [
   '/language-puzzles/',
@@ -7,7 +7,6 @@ const urlsToCache = [
   '/language-puzzles/english.html',
   '/language-puzzles/french.html',
   '/language-puzzles/german.html',
-  '/language-puzzles/offline.html',
   '/language-puzzles/icon-192.png',
   '/language-puzzles/icon-512.png'
 ];
@@ -27,3 +26,4 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
